@@ -76,16 +76,25 @@ class WebServer
      */
     public function _onRequest($request, $response)
     {
+        // prepare the app
         $app = require $this->_bootstrap;
         $app["requestParams"] = [
             "uri"       =>  $request->server['request_uri'],
             "method"    =>  $request->server['request_method']
         ];
 
+        // run app code
         $app->run(
             $app["request.service"],
             $app["response.service"]
         );
+
+        // prepare for output
+        $headers = $app["response.service"]->headers->allPreserveCase();
+        foreach ($headers as $name => $value) {
+            $response->header($name, implode(";", $value));
+        }
+        $response->status($app["response.service"]->getStatusCode());
         $response->end($app["response.service"]->getContent());
     }
 }
