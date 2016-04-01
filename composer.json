@@ -1,0 +1,26 @@
+{
+    "name": "slaxweb/appserver",
+    "description": "AppServer for SlaxWeb Framework",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Tomaz Lovrec",
+            "email": "tomaz.lovrec@gmail.com"
+        }
+    ],
+    "require": {
+        "php":  ">=7.0.0",
+        "ext-swoole": "*"
+    },
+    "autoload": {
+        "psr-4": {
+            "SlaxWeb\\AppServer\\": "src"
+        }
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-develop": "0.1.x-dev"
+        }
+    },
+    "minimum-stability": "dev"
+}
