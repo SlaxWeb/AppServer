@@ -74,7 +74,7 @@ class WebServer
      * @param response $response Response Object that Swoole will print back
      * @return void
      */
-    protected function _onRequest($request, $response)
+    public function _onRequest($request, $response)
     {
         $app->run($app["request.service"], $app["response.service"]);
         $response->end($app["response.service"]->send);
