@@ -15,11 +15,11 @@
  * @link      https://github.com/slaxweb/
  * @version   0.1
  */
-namespace SlaxWeb\AppServer;
+namespace SlaxWeb\AppServer\Service;
 
 use swoole_http_server;
 
-class Provider extends \Pimple\ServiceProviderInterface
+class Provider implements \Pimple\ServiceProviderInterface
 {
     /**
      * Register services
