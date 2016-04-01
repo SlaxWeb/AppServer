@@ -80,6 +80,6 @@ class WebServer
             $this->_app["request.service"],
             $this->_app["response.service"]
         );
-        $response->end($this->_app["response.service"]->send);
+        $response->end($this->_app["response.service"]->send());
     }
 }
