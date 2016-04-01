@@ -50,6 +50,8 @@ class WebServer
     {
         $this->_http = $http;
         $this->_app = $app;
+
+        $this->_http->on("request", [$this, "_onRequest"]);
     }
 
     /**
@@ -59,7 +61,7 @@ class WebServer
      */
     public function start()
     {
-        $this->_http->on("request", [$this, "_onRequest"]);
+        $this->_http->start();
     }
 
     /**
