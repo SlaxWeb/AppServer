@@ -20,7 +20,6 @@
 namespace SlaxWeb\AppServer;
 
 use swoole_http_server;
-use SlaxWeb\Bootstrap\Application;
 
 class WebServer
 {
@@ -32,24 +31,25 @@ class WebServer
     protected $_http = null;
 
     /**
-     * Application Object
+     * Application Bootstrap Location
      *
-     * @var \SlaxWeb\Bootstrap\Application
+     * @var string
      */
-    protected $_app = null;
+    protected $_bootstrap = "";
 
     /**
      * Class Constructor
      *
      * Add the reference to the 'swoole_http_server' and the Framework
-     * Application Object to the protected class properties.
+     * Application Bootstrap Location to the protected class properties.
      *
      * @param swoole_http_server $http Swoole Http Server
+     * @param string $bootstrap Application bootstrap location
      */
-    public function __construct(swoole_http_server $http, Application $app)
+    public function __construct(swoole_http_server $http, string $bootstrap)
     {
         $this->_http = $http;
-        $this->_app = $app;
+        $this->_bootstrap = $bootstrap;
 
         $this->_http->on("request", [$this, "_onRequest"]);
     }
@@ -76,10 +76,16 @@ class WebServer
      */
     public function _onRequest($request, $response)
     {
-        $this->_app->run(
-            $this->_app["request.service"],
-            $this->_app["response.service"]
+        $app = require $this->_bootstrap;
+        $app["requestParams"] = [
+            "uri"       =>  $request->server['request_uri'],
+            "method"    =>  $request->server['request_method']
+        ];
+
+        $app->run(
+            $app["request.service"],
+            $app["response.service"]
         );
-        $response->end($this->_app["response.service"]->send());
+        $response->end($app["response.service"]->getContent());
     }
 }
