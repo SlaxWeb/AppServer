@@ -76,7 +76,10 @@ class WebServer
      */
     public function _onRequest($request, $response)
     {
-        $app->run($app["request.service"], $app["response.service"]);
+        $this->_app->run(
+            $this->_app["request.service"],
+            $this->_app["response.service"]
+        );
         $response->end($app["response.service"]->send);
     }
 }
