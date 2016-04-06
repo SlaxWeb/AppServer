@@ -18,7 +18,7 @@ function run(Application $app)
     $dir = "{$app["appDir"]}Config/Component/AppServer/";
     $file = __DIR__ . "/appserver.php";
     if (file_exists($dir) === false) {
-        mkdir($dir, 0655, true);
+        mkdir($dir, 0755, true);
     }
 
     $exit = 0;
