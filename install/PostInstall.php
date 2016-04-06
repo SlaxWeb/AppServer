@@ -15,14 +15,14 @@ use SlaxWeb\Bootstrap\Application;
 
 function run(Application $app)
 {
-    $dir = "{$app["appDir"]}Component/AppServer/";
+    $dir = "{$app["appDir"]}Config/Component/AppServer/";
     $file = __DIR__ . "/appserver.php";
     if (file_exists($dir) === false) {
         mkdir($dir, 0655, true);
     }
 
     $exit = 0;
-    system("cp {$file} {$app["appDir"]}Component/AppServer/", $exit);
+    system("cp {$file} {$dir}", $exit);
 
     return $exit;
 }
