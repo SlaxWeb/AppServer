@@ -133,8 +133,8 @@ class ServerCommand extends Command
         $config = $this->_prepConfig(
             $this->_app["config.service"]["appserver.webserver"]
         );
+        $config["daemonize"] = true;
         $this->_app["webserver.config"] = $config;
-        $this->_app["webserver.config"]["daemonize"] = true;
         if ($output->getVerbosity() >= OutputInterface::VERBOSITY_VERBOSE) {
             $output->writeln("<comment>Config loaded</>");
         }
@@ -152,7 +152,6 @@ class ServerCommand extends Command
          */
         $this->_app->register(new \SlaxWeb\AppServer\Service\Provider);
         $this->_app["webserver.service"]->start();
-        $output->writeln("<comment>OK</>");
     }
 
     /**

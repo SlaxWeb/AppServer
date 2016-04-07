@@ -124,7 +124,7 @@ class WebServer
      * @param array $config WebServer config
      * @return array
      */
-    protected _prepSwooleConfig(array $config): array
+    protected function _prepSwooleConfig(array $config): array
     {
         return [
             "daemonize" =>  $config["daemonize"]
