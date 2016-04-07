@@ -23,11 +23,11 @@ $configuration["appserver.webserver"] = [
 
     // Changes bellow this commend are not recommended!
     // document root (public directory)
-    "rootDir"   =>  "%{pubdir}%",
+    "rootDir"   =>  "%{pubDir}%",
     // pidfile path
-    "pidFile"   =>  "%{appdir}%Cache/appserver.pid",
+    "pidFile"   =>  "%{appDir}%Cache/appserver.pid",
     // web app bootstrap file
-    "bootstrap" =>  "%{appdir}%../bootstrap/web.php"
+    "bootstrap" =>  "%{appDir}%../bootstrap/web.php"
 ];
 
 /*

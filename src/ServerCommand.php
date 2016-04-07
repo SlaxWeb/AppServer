@@ -132,7 +132,6 @@ class ServerCommand extends Command
         if ($output->getVerbosity() >= OutputInterface::VERBOSITY_VERBOSE) {
             $output->writeln("<comment>Loading config</>");
         }
-
         $config = $this->_prepConfig(
             $this->_app["config.service"]["appserver.webserver"]
         );
@@ -142,24 +141,24 @@ class ServerCommand extends Command
         $this->_app["webserver.docRoot"] = $config["rootDir"];
         $this->_app["webserver.pidFile"] = $config["pidFile"];
         $this->_app["webserver.daemonize"] = true;
-
         if ($output->getVerbosity() >= OutputInterface::VERBOSITY_VERBOSE) {
             $output->writeln("<comment>Config loaded</>");
         }
 
         $output->writeln("<comment>Check server running ...</>");
-
         if (file_exists($this->_app["webserver.pidFile"])) {
             $output->writeln("<error>Server already running, use 'stop' or 'restart'</>");
             return;
         }
 
+        $output->writeln("<comment>Starting Web Server ...</>");
         /*
          * @todo: Put provider class into component provideres configuration
          * item, when framework will load them in that fashion as commands
          */
         $this->_app->register(new \SlaxWeb\AppServer\Service\Provider);
         $this->_app["webserver.service"]->start();
+        $output->writeln("<comment>OK</>");
     }
 
     /**
