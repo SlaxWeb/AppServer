@@ -38,17 +38,15 @@ class ServerCommand extends Command
     protected $_operations = "start|stop|restart";
 
     /**
-     * Construct Class
+     * Command init
      *
      * Put Framework Instance into local protected property.
      *
      * @param \SlaxWeb\Bootstrap\Application $app Framework Instance
      */
-    public function __construct(Application $app)
+    public function init(Application $app)
     {
         $this->_app = $app;
-
-        parent::__construct();
     }
 
     /**
