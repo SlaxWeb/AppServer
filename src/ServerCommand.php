@@ -14,6 +14,7 @@
  */
 namespace SlaxWeb\AppServer;
 
+use SlaxWeb\Bootstrap\Application;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Input\InputArgument;
@@ -23,11 +24,32 @@ use Symfony\Component\Console\Output\OutputInterface;
 class ServerCommand extends Command
 {
     /**
+     * Framework Instance
+     *
+     * @var \SlaxWeb\Bootstrap\Application
+     */
+    protected $_app = null;
+
+    /**
      * Operations
      *
      * @var array
      */
     protected $_operations = "start|stop|restart";
+
+    /**
+     * Construct Class
+     *
+     * Put Framework Instance into local protected property.
+     *
+     * @param \SlaxWeb\Bootstrap\Application $app Framework Instance
+     */
+    public function __construct(Application $app)
+    {
+        $this->_app = $app;
+
+        parent::__construct();
+    }
 
     /**
      * Configure the command
@@ -73,6 +95,31 @@ class ServerCommand extends Command
     }
 
     /**
+     * Prepare config
+     *
+     * Replace all placeholders in configuration items with values from the
+     * application properties with same name. Recursive.
+     *
+     * @param array $config Configuration array
+     * @return array
+     */
+    protected function _prepConfig(array $config): array
+    {
+        foreach ($config as &$item) {
+            if (is_array($item)) {
+                $item = $this->_prepConfig($item);
+                continue;
+            }
+
+            $item = preg_replace_callback("~%{(.*)}%~", function ($matches) {
+                return $this->_app[$matches[1]] ?? $matches[1];
+            }, $item);
+        }
+        unset($item);
+        return $config;
+    }
+
+    /**
      * Start Server
      *
      * Start the Web Server as a daemon.
@@ -82,7 +129,37 @@ class ServerCommand extends Command
      */
     protected function _handleStart(OutputInterface $output)
     {
-        $output->writeln("<comment>Soon!</>");
+        if ($output->getVerbosity() >= OutputInterface::VERBOSITY_VERBOSE) {
+            $output->writeln("<comment>Loading config</>");
+        }
+
+        $config = $this->_prepConfig(
+            $this->_app["config.service"]["appserver.webserver"]
+        );
+        $this->_app["webserver.address"] = $config["host"];
+        $this->_app["webserver.port"] = $config["port"];
+        $this->_app["webserver.bootstrapPath"] = $config["bootstrap"];
+        $this->_app["webserver.docRoot"] = $config["rootDir"];
+        $this->_app["webserver.pidFile"] = $config["pidFile"];
+        $this->_app["webserver.daemonize"] = true;
+
+        if ($output->getVerbosity() >= OutputInterface::VERBOSITY_VERBOSE) {
+            $output->writeln("<comment>Config loaded</>");
+        }
+
+        $output->writeln("<comment>Check server running ...</>");
+
+        if (file_exists($this->_app["webserver.pidFile"])) {
+            $output->writeln("<error>Server already running, use 'stop' or 'restart'</>");
+            return;
+        }
+
+        /*
+         * @todo: Put provider class into component provideres configuration
+         * item, when framework will load them in that fashion as commands
+         */
+        $this->_app->register(new \SlaxWeb\AppServer\Service\Provider);
+        $this->_app["webserver.service"]->start();
     }
 
     /**

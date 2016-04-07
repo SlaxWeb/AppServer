@@ -13,10 +13,21 @@
  */
 /*
  * WebServer Config
+ *
+ * WebServer initialization replaces %{param}% occurances in all configuration
+ * items with the value of application parameter "param".
  */
 $configuration["appserver.webserver"] = [
-    "host"  =>  "127.0.0.1",
-    "port"  =>  9051
+    "host"      =>  "127.0.0.1",
+    "port"      =>  9051,
+
+    // Changes bellow this commend are not recommended!
+    // document root (public directory)
+    "rootDir"   =>  "%{pubdir}%",
+    // pidfile path
+    "pidFile"   =>  "%{appdir}%Cache/appserver.pid",
+    // web app bootstrap file
+    "bootstrap" =>  "%{appdir}%../bootstrap/web.php"
 ];
 
 /*
