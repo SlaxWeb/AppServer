@@ -27,7 +27,9 @@ $configuration["appserver.webserver"] = [
     // pidfile path
     "pidFile"   =>  "%{appDir}%Cache/appserver.pid",
     // web app bootstrap file
-    "bootstrap" =>  "%{appDir}%../bootstrap/web.php"
+    "bootstrap" =>  "%{appDir}%../bootstrap/web.php",
+    // log file
+    "logFile"   =>  "%{appDir}%Logs/WebServer-" . date("Ymd") . ".log"
 ];
 
 /*

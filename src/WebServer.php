@@ -127,7 +127,8 @@ class WebServer
     protected function _prepSwooleConfig(array $config): array
     {
         return [
-            "daemonize" =>  $config["daemonize"]
+            "daemonize" =>  $config["daemonize"],
+            "log_file"  =>  $config["logFile"]
         ];
     }
 }
