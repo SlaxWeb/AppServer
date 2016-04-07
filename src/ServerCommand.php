@@ -133,12 +133,8 @@ class ServerCommand extends Command
         $config = $this->_prepConfig(
             $this->_app["config.service"]["appserver.webserver"]
         );
-        $this->_app["webserver.address"] = $config["host"];
-        $this->_app["webserver.port"] = $config["port"];
-        $this->_app["webserver.bootstrapPath"] = $config["bootstrap"];
-        $this->_app["webserver.docRoot"] = $config["rootDir"];
-        $this->_app["webserver.pidFile"] = $config["pidFile"];
-        $this->_app["webserver.daemonize"] = true;
+        $this->_app["webserver.config"] = $config;
+        $this->_app["webserver.config"]["daemonize"] = true;
         if ($output->getVerbosity() >= OutputInterface::VERBOSITY_VERBOSE) {
             $output->writeln("<comment>Config loaded</>");
         }

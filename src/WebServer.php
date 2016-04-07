@@ -33,25 +33,28 @@ class WebServer
     /**
      * Application Bootstrap Location
      *
-     * @var string
+     * @var array
      */
-    protected $_bootstrap = "";
+    protected $_config = [];
 
     /**
      * Class Constructor
      *
-     * Add the reference to the 'swoole_http_server' and the Framework
-     * Application Bootstrap Location to the protected class properties.
+     * Add the reference to the 'swoole_http_server' and the Web Server
+     * configuration array to the protected class properties.
      *
      * @param swoole_http_server $http Swoole Http Server
-     * @param string $bootstrap Application bootstrap location
+     * @param array $config WebServer config
      */
-    public function __construct(swoole_http_server $http, string $bootstrap)
+    public function __construct(swoole_http_server $http, array $config)
     {
         $this->_http = $http;
-        $this->_bootstrap = $bootstrap;
+        $this->_config = $config;
 
         $this->_http->on("request", [$this, "_onRequest"]);
+        $this->_http->on("start", [$this, "_onServerStart"]);
+
+        $this->_http->set($this->_prepSwooleConfig($config));
     }
 
     /**
@@ -62,6 +65,19 @@ class WebServer
     public function start()
     {
         $this->_http->start();
+    }
+
+    /**
+     * Server Start Handler
+     *
+     * Write server PID to pid file.
+     *
+     * @param object $server Server Object
+     * @return void
+     */
+    public function _onServerStart($server)
+    {
+        file_put_contents($this->_config["pidFile"], $server->master_pid);
     }
 
     /**
@@ -77,7 +93,7 @@ class WebServer
     public function _onRequest($request, $response)
     {
         // prepare the app
-        $app = require $this->_bootstrap;
+        $app = require $this->_config["bootstrap"];
         $app["requestParams"] = [
             "uri"       =>  $request->server['request_uri'],
             "method"    =>  $request->server['request_method']
@@ -96,5 +112,22 @@ class WebServer
         }
         $response->status($app["response.service"]->getStatusCode());
         $response->end($app["response.service"]->getContent());
+    }
+
+    /**
+     * Prepare Swoole Configuration
+     *
+     * Prepare the Swoole configuration from the Web Server configuration, to
+     * ensure that the correct array key names are used, and that only the
+     * Swoole configuration items are in the array.
+     *
+     * @param array $config WebServer config
+     * @return array
+     */
+    protected _prepSwooleConfig(array $config): array
+    {
+        return [
+            "daemonize" =>  $config["daemonize"]
+        ];
     }
 }

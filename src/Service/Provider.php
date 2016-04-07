@@ -35,10 +35,10 @@ class Provider implements \Pimple\ServiceProviderInterface
         $container["webserver.service"] = function (\Pimple\Container $cont) {
             return new \SlaxWeb\AppServer\WebServer(
                 new swoole_http_server(
-                    $cont["webserver.address"],
-                    $cont["webserver.port"]
+                    $cont["webserver.config"]["address"],
+                    $cont["webserver.config"]["port"]
                 ),
-                $cont["webserver.bootstrapPath"]
+                $cont["webserver.config"]
             );
         };
     }
