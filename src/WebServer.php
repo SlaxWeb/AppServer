@@ -53,6 +53,7 @@ class WebServer
 
         $this->_http->on("request", [$this, "_onRequest"]);
         $this->_http->on("start", [$this, "_onServerStart"]);
+        $this->_http->on("stop", [$this, "_onServerStop"]);
 
         $this->_http->set($this->_prepSwooleConfig($config));
     }
@@ -72,12 +73,26 @@ class WebServer
      *
      * Write server PID to pid file.
      *
-     * @param object $server Server Object
+     * @param \swoole_http_server $server Server Object
      * @return void
      */
     public function _onServerStart($server)
     {
         file_put_contents($this->_config["pidFile"], $server->master_pid);
+    }
+
+    /**
+     * Handle server stop
+     *
+     * Remove the PID file when the server is stopped.
+     *
+     * @return void
+     */
+    public function _onServerStop()
+    {
+        if (file_exists($this->_config["pidFile"])) {
+            unlink($this->_config["pidFile"]);
+        }
     }
 
     /**

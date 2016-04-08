@@ -124,6 +124,8 @@ class ServerCommand extends Command
      *
      * @param \Symfony\Component\Console\Output\OutputInterface $output Command Output Object
      * @return void
+     *
+     * @todo: if pid file exists, check if pid in pid file is acutally in execution
      */
     protected function _handleStart(OutputInterface $output)
     {
@@ -161,10 +163,41 @@ class ServerCommand extends Command
      *
      * @param \Symfony\Component\Console\Output\OutputInterface $output Command Output Object
      * @return void
+     *
+     * @todo: implement Windows compatible stop
      */
     protected function _handleStop(OutputInterface $output)
     {
-        $output->writeln("<comment>Soon!</>");
+        $pidFile = $this->_app["webserver.config"]["pidFile"] ?? "";
+
+        $output->writeln("<comment>Check server running ...</>");
+        if (file_exists($pidFile)) {
+            $output->writeln("<error>Server not started, can not stop</>");
+            return;
+        }
+        $pid = file_get_contents($pidFile);
+
+        $output->writeln("<comment>Stopping server ...</>");
+        if (posix_kill($pid, SIGTERM) === false) {
+            $output->writeln(
+                "<error>Could not stop server, try stoping it by killing the process ID '{$pid}'.</>"
+            );
+            return;
+        }
+
+        for ($count = 0; $i < 10; $i++) {
+            $output->writeln("<comment>Wairing for server to stop ...</>");
+            usleep(1000000);
+            if (file_exists($pidFile) === false) {
+                $output->writeln("<comment>Server stopped ...</>");
+                return;
+            }
+        }
+
+        $output->writeln(
+            "<error>Server did not stop for in 10 seconds. Aborting. Try "
+            . "stoping it by killing the process ID '{$pid}'.</>"
+        );
     }
 
     /**
@@ -178,6 +211,7 @@ class ServerCommand extends Command
      */
     protected function _handleRestart(OutputInterface $output)
     {
-        $output->writeln("<comment>Soon!</>");
+        $this->_hanldeStop($output);
+        $this->_handleStart($output);
     }
 }
