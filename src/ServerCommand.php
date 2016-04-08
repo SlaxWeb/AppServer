@@ -168,7 +168,10 @@ class ServerCommand extends Command
      */
     protected function _handleStop(OutputInterface $output)
     {
-        $pidFile = $this->_app["webserver.config"]["pidFile"] ?? "";
+        $config = $this->_prepConfig(
+            $this->_app["config.service"]["appserver.webserver"]
+        );
+        $pidFile = $config["pidFile"] ?? "";
 
         $output->writeln("<comment>Check server running ...</>");
         if (file_exists($pidFile)) {
