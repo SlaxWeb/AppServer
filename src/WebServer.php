@@ -53,7 +53,7 @@ class WebServer
 
         $this->_http->on("request", [$this, "_onRequest"]);
         $this->_http->on("start", [$this, "_onServerStart"]);
-        $this->_http->on("stop", [$this, "_onServerStop"]);
+        $this->_http->on("shutdown", [$this, "_onServerShutdown"]);
 
         $this->_http->set($this->_prepSwooleConfig($config));
     }
@@ -82,13 +82,13 @@ class WebServer
     }
 
     /**
-     * Handle server stop
+     * Handle server shutdown
      *
-     * Remove the PID file when the server is stopped.
+     * Remove the PID file when the server is shutdown.
      *
      * @return void
      */
-    public function _onServerStop()
+    public function _onServerShutdown()
     {
         if (file_exists($this->_config["pidFile"])) {
             unlink($this->_config["pidFile"]);

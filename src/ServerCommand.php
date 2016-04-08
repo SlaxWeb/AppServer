@@ -86,6 +86,7 @@ class ServerCommand extends Command
             $output->writeln(
                 "<error>Unknown operation. Possible operations: {{$this->_operations}}"
             );
+            return;
         }
 
         $operation = "_handle" . ucfirst($operation);
@@ -174,7 +175,7 @@ class ServerCommand extends Command
         $pidFile = $config["pidFile"] ?? "";
 
         $output->writeln("<comment>Check server running ...</>");
-        if (file_exists($pidFile)) {
+        if (file_exists($pidFile) === false) {
             $output->writeln("<error>Server not started, can not stop</>");
             return;
         }
@@ -188,7 +189,7 @@ class ServerCommand extends Command
             return;
         }
 
-        for ($count = 0; $i < 10; $i++) {
+        for ($count = 0; $count < 10; $count++) {
             $output->writeln("<comment>Wairing for server to stop ...</>");
             usleep(1000000);
             if (file_exists($pidFile) === false) {
@@ -214,7 +215,7 @@ class ServerCommand extends Command
      */
     protected function _handleRestart(OutputInterface $output)
     {
-        $this->_hanldeStop($output);
+        $this->_handleStop($output);
         $this->_handleStart($output);
     }
 }
