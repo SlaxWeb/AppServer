@@ -20,6 +20,8 @@
 namespace SlaxWeb\AppServer;
 
 use swoole_http_server;
+use swoole_http_request;
+use swoole_http_response;
 
 class WebServer
 {
@@ -101,17 +103,28 @@ class WebServer
      * Forward the request to the application for processing, and set the proper
      * response at the end.
      *
-     * @param request $request Incoming Request Object
-     * @param response $response Response Object that Swoole will print back
+     * @param swoole_http_request $request Incoming Request Object
+     * @param swoole_http_response $response Response Object that Swoole will print to requestor
      * @return void
      */
-    public function _onRequest($request, $response)
-    {
+    public function _onRequest(
+        swoole_http_request $request,
+        swoole_http_response $response
+    ) {
+        $requestFile = $this->_config["rootDir"]
+            . $request->server["request_uri"];
+
+        if (file_exists($requestFile)) {
+            // serve static file
+            $this->_serveStaticFile($requestFile, $response);
+            return;
+        }
+
         // prepare the app
         $app = require $this->_config["bootstrap"];
         $app["requestParams"] = [
-            "uri"       =>  $request->server['request_uri'],
-            "method"    =>  $request->server['request_method']
+            "uri"       =>  $request->server["request_uri"],
+            "method"    =>  $request->server["request_method"]
         ];
 
         // run app code
@@ -145,5 +158,23 @@ class WebServer
             "daemonize" =>  $config["daemonize"],
             "log_file"  =>  $config["logFile"]
         ];
+    }
+
+    /**
+     * Serve static file
+     *
+     * Load the file and put its contens into the Response object.
+     *
+     * @param string $file Name of the file
+     * @param swoole_http_response $response Response Object that Swoole will print to requestor
+     * @return void
+     */
+    protected function _serveStaticFile(string $file, swoole_http_response $response)
+    {
+        $mime = mime_content_type($file);
+        $content = file_get_contents($file);
+
+        $response->header("Content-Type", $mime);
+        $response->end($content);
     }
 }
