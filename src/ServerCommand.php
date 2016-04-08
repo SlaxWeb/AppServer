@@ -125,8 +125,6 @@ class ServerCommand extends Command
      *
      * @param \Symfony\Component\Console\Output\OutputInterface $output Command Output Object
      * @return void
-     *
-     * @todo: if pid file exists, check if pid in pid file is acutally in execution
      */
     protected function _handleStart(OutputInterface $output)
     {
@@ -143,7 +141,7 @@ class ServerCommand extends Command
         }
 
         $output->writeln("<comment>Check server running ...</>");
-        if (file_exists($this->_app["webserver.config"]["pidFile"])) {
+        if ($this->_isRunning($config["pidFile"], $output)) {
             $output->writeln("<error>Server already running, use 'stop' or 'restart'</>");
             return;
         }
@@ -175,7 +173,7 @@ class ServerCommand extends Command
         $pidFile = $config["pidFile"] ?? "";
 
         $output->writeln("<comment>Check server running ...</>");
-        if (file_exists($pidFile) === false) {
+        if ($this->_isRunning($pidFile, $output) === false) {
             $output->writeln("<error>Server not started, can not stop</>");
             return;
         }
@@ -192,7 +190,7 @@ class ServerCommand extends Command
         for ($count = 0; $count < 10; $count++) {
             $output->writeln("<comment>Wairing for server to stop ...</>");
             usleep(1000000);
-            if (file_exists($pidFile) === false) {
+            if ($this->_isRunning($pidFile, $output) === false) {
                 $output->writeln("<comment>Server stopped ...</>");
                 return;
             }
@@ -217,5 +215,35 @@ class ServerCommand extends Command
     {
         $this->_handleStop($output);
         $this->_handleStart($output);
+    }
+
+    /**
+     * Check server running
+     *
+     * Check if the server is indeed running. If there is no PID file, asume
+     * server is not running. If there is a PID file present, check the process
+     * is actually in execution.
+     *
+     * @param string $pidFile Full path to the PID file
+     * @param \Symfony\Component\Console\Output\OutputInterface $output Command Output Object
+     * @return bool
+     */
+    protected function _isRunning(string $pidFile, OutputInterface $output): bool
+    {
+        if (file_exists($pidFile) === false) {
+            return false;
+        }
+
+        $pid = file_get_contents($pidFile);
+        if (posix_getpgid($pid) === false) {
+            $output->writeln(
+                "<comment>PID file exists, but server appears to have been stopped. Removing pid file.</>"
+            );
+            unlink($pidFile);
+            return false;
+        }
+
+        // if this point is reached, the server is considered started
+        return true;
     }
 }
