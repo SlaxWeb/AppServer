@@ -6,3 +6,4 @@ Changes between versions.
 
 * add swoole webserver
 * add server command for slaxer
+* add static file serving
