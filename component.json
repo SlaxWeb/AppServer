@@ -1,0 +1,22 @@
+{
+    "name": "database",
+    "description": "AppServer for SlaxWeb Framework",
+    "type": "main",
+    "providers": {
+        "app": [
+            "\\SlaxWeb\\AppServer\\Service\\Provider"
+        ],
+        "commands": [
+            "\\SlaxWeb\\AppServer\\ServerCommand"
+        ],
+        "hooks": []
+    },
+    "configFiles": [
+        "appserver.php"
+    ],
+    "subcomponents": {
+        "list": {},
+        "required": false,
+        "multi": false
+    }
+}

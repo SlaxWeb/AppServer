@@ -17,7 +17,7 @@
  * WebServer initialization replaces %{param}% occurances in all configuration
  * items with the value of application parameter "param".
  */
-$configuration["appserver.webserver"] = [
+$configuration["webserver"] = [
     "host"      =>  "127.0.0.1",
     "port"      =>  9051,
 
@@ -30,11 +30,4 @@ $configuration["appserver.webserver"] = [
     "bootstrap" =>  "%{appDir}%../bootstrap/web.php",
     // log file
     "logFile"   =>  "%{appDir}%Logs/WebServer-" . date("Ymd") . ".log"
-];
-
-/*
- * Commands to register to Slaxer
- */
-$configuration["component.commands"] = [
-    \SlaxWeb\AppServer\ServerCommand::class
 ];
