@@ -127,6 +127,9 @@ class WebServer
             "method"    =>  $request->server["request_method"]
         ];
 
+        // copy request data to $_SERVER superglobal
+        $this->setRequestData($request);
+
         // run app code
         $app->run(
             $app["request.service"],
@@ -158,6 +161,36 @@ class WebServer
             "daemonize" =>  $config["daemonize"],
             "log_file"  =>  $config["logFile"]
         ];
+    }
+
+    /**
+     * Set Request to superglobal
+     *
+     * Sets the $_SERVER superglobal values from the swoole request object.
+     *
+     * @param swoole_http_request $request Incoming Request Object
+     * @return void
+     */
+    protected function setRequestData(swoole_http_request $request)
+    {
+        $_SERVER["HTTP_ACCEPT_LANGUAGE"] = $request->header["accept-language"];
+        $_SERVER["HTTP_ACCEPT_ENCODING"] = $request->header["accept-encoding"];
+        $_SERVER["HTTP_ACCEPT"] = $request->header["accept"];
+        $_SERVER["HTTP_USER_AGENT"] = $request->header["user-agent"];
+        $_SERVER["HTTP_UPGRADE_INSECURE_REQUESTS"] = $request->header["upgrade-insecure-requests"];
+        $_SERVER["HTTP_CACHE_CONTROL"] = $request->header["cache-control"];
+        $_SERVER["HTTP_CONNECTION"] = $request->header["connection"];
+        $_SERVER["HTTP_HOST"] = $request->header["host"];
+        $_SERVER["REQUEST_METHOD"] = $request->server["request_method"];
+        $_SERVER["REQUEST_URI"] = $request->server["request_uri"];
+        $_SERVER["SERVER_PROTOCOL"] = $request->server["server_protocol"];
+        $_SERVER["REMOTE_PORT"] = $request->server["remote_port"];
+        $_SERVER["REMOTE_ADDR"] = $request->server["remote_addr"];
+        $_SERVER["SERVER_SOFTWARE"] = $request->server["server_software"];
+        $_SERVER["SERVER_PORT"] = $request->server["server_port"];
+        $_SERVER["SERVER_ADDR"] = $request->server["server_addr"];
+        $_SERVER["REQUEST_TIME_FLOAT"] = $request->server["request_time_float"];
+        $_SERVER["REQUEST_TIME"] = $request->server["request_time"];
     }
 
     /**
