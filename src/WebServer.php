@@ -112,9 +112,9 @@ class WebServer
         swoole_http_response $response
     ) {
         $requestFile = $this->_config["rootDir"]
-            . $request->server["request_uri"];
+            . ltrim($request->server["request_uri"], "/");
 
-        if (file_exists($requestFile)) {
+        if (file_exists($requestFile) && is_dir($requestFile) === false) {
             // serve static file
             $this->_serveStaticFile($requestFile, $response);
             return;
