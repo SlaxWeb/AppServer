@@ -26,13 +26,6 @@ use swoole_http_response;
 class WebServer
 {
     /**
-     * SlaxWeb Application object
-     *
-     * @var \SlaxWeb\Bootstrap\Application
-     */
-    protected $this->app = null;
-
-    /**
      * Http Server
      *
      * @var swoole_http_server
@@ -65,8 +58,6 @@ class WebServer
         $this->_http->on("shutdown", [$this, "_onServerShutdown"]);
 
         $this->_http->set($this->_prepSwooleConfig($config));
-
-        $this->app = require $this->_config["bootstrap"];
     }
 
     /**
@@ -130,7 +121,8 @@ class WebServer
         }
 
         // prepare the app
-        $this->app["requestParams"] = [
+        $app = require $this->_config["bootstrap"];
+        $app["requestParams"] = [
             "uri"       =>  $request->server["request_uri"],
             "method"    =>  $request->server["request_method"]
         ];
@@ -139,18 +131,18 @@ class WebServer
         $this->setRequestData($request);
 
         // run app code
-        $this->app->run(
-            $this->app["request.service"],
-            $this->app["response.service"]
+        $app->run(
+            $app["request.service"],
+            $app["response.service"]
         );
 
         // prepare for output
-        $headers = $this->app["response.service"]->headers->allPreserveCase();
+        $headers = $app["response.service"]->headers->allPreserveCase();
         foreach ($headers as $name => $value) {
             $response->header($name, implode(";", $value));
         }
-        $response->status($this->app["response.service"]->getStatusCode());
-        $response->end($this->app["response.service"]->getContent());
+        $response->status($app["response.service"]->getStatusCode());
+        $response->end($app["response.service"]->getContent());
     }
 
     /**
