@@ -18,16 +18,18 @@
  * items with the value of application parameter "param".
  */
 $configuration["webserver"] = [
-    "host"      =>  "127.0.0.1",
-    "port"      =>  9051,
+    "host"              =>  "0.0.0.0",
+    "port"              =>  9051,
 
     // Changes bellow this commend are not recommended!
     // document root (public directory)
-    "rootDir"   =>  "%{pubDir}%",
+    "rootDir"           =>  "%{pubDir}%",
     // pidfile path
-    "pidFile"   =>  "%{appDir}%Cache/appserver.pid",
+    "pidFile"           =>  "%{appDir}%Cache/appserver.pid",
     // web app bootstrap file
-    "bootstrap" =>  "%{appDir}%../bootstrap/web.php",
+    "bootstrap"         =>  "%{appDir}%../bootstrap/web.php",
     // log file
-    "logFile"   =>  "%{appDir}%Logs/WebServer-" . date("Ymd") . ".log"
+    "logFile"           =>  "%{appDir}%Logs/WebServer-" . date("Ymd") . ".log",
+    // front controller name
+    "frontController"   =>  "index.php"
 ];

@@ -38,7 +38,7 @@ class Provider implements \Pimple\ServiceProviderInterface
                     $cont["webserver.config"]["host"],
                     $cont["webserver.config"]["port"]
                 ),
-                $cont["webserver.config"]
+                $cont
             );
         };
     }

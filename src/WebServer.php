@@ -22,15 +22,30 @@ namespace SlaxWeb\AppServer;
 use swoole_http_server;
 use swoole_http_request;
 use swoole_http_response;
+use SlaxWeb\Bootstrap\Application as App;
 
 class WebServer
 {
+    /**
+     * SlaxWeb Application
+     *
+     * @var \SlaxWeb\Bootstrap\Application
+     */
+    protected $app = null;
+
     /**
      * Http Server
      *
      * @var swoole_http_server
      */
     protected $_http = null;
+
+    /**
+     * Logger instance
+     *
+     * @var \Psr\Log\LoggerInterface
+     */
+    protected $logger = null;
 
     /**
      * Application Bootstrap Location
@@ -46,18 +61,22 @@ class WebServer
      * configuration array to the protected class properties.
      *
      * @param swoole_http_server $http Swoole Http Server
-     * @param array $config WebServer config
+     * @param \SlaxWeb\Bootstrap\Application $app
      */
-    public function __construct(swoole_http_server $http, array $config)
+    public function __construct(swoole_http_server $http, App $app)
     {
         $this->_http = $http;
-        $this->_config = $config;
+        $this->app = $app;
+        $this->logger = $app["logger.service"]("WebServer");
+        $this->_config = $app["webserver.config"];
 
         $this->_http->on("request", [$this, "_onRequest"]);
         $this->_http->on("start", [$this, "_onServerStart"]);
         $this->_http->on("shutdown", [$this, "_onServerShutdown"]);
 
-        $this->_http->set($this->_prepSwooleConfig($config));
+        $this->_http->set($this->_prepSwooleConfig($this->_config));
+
+        $this->logger->info("WebServer class initialized");
     }
 
     /**
@@ -81,6 +100,8 @@ class WebServer
     public function _onServerStart($server)
     {
         file_put_contents($this->_config["pidFile"], $server->master_pid);
+
+        $this->logger->debug("Web server started under PID <{$server->master_pid}>");
     }
 
     /**
@@ -95,6 +116,8 @@ class WebServer
         if (file_exists($this->_config["pidFile"])) {
             unlink($this->_config["pidFile"]);
         }
+
+        $this->logger->debug("Web server shutting down. PID file removed.");
     }
 
     /**
@@ -114,7 +137,15 @@ class WebServer
         $requestFile = $this->_config["rootDir"]
             . ltrim($request->server["request_uri"], "/");
 
-        if (file_exists($requestFile) && is_dir($requestFile) === false) {
+        $this->logger->debug(
+            "Received request.",
+            ["uri" => $request->server["request_uri"], "requestFile" => $requestFile]
+        );
+
+        if (file_exists($requestFile)
+            && is_dir($requestFile) === false
+            && basename($requestFile) !== $this->_config["frontController"]
+        ) {
             // serve static file
             $this->_serveStaticFile($requestFile, $response);
             return;
@@ -136,13 +167,24 @@ class WebServer
             $app["response.service"]
         );
 
+        $this->logger->info("Request processed by the app, preparing output");
+
         // prepare for output
         $headers = $app["response.service"]->headers->allPreserveCase();
+        $code = $app["output.service"]->getStatusCode()
+            ?: $app["response.service"]->getStatusCode();
+        $content = $app["output.service"]->render()
+            ?: $app["response.service"]->getContent();
         foreach ($headers as $name => $value) {
             $response->header($name, implode(";", $value));
         }
-        $response->status($app["response.service"]->getStatusCode());
-        $response->end($app["response.service"]->getContent());
+        $response->status($code);
+        $response->end($content);
+
+        $this->logger->debug(
+            "Request processed and output",
+            ["statusCode" => $code, "headers" => $headers, "content" => $content]
+        );
     }
 
     /**
@@ -195,6 +237,11 @@ class WebServer
         $_GET = $request->get ?? [];
         $_POST = $request->post ?? [];
         $_COOKIE = $request->cookie ?? [];
+
+        $this->logger->debug(
+            "Request data has been set",
+            ["server" => $_SERVER, "get" => $_GET, "post" => $_POST, "cookie" => $_COOKIE]
+        );
     }
 
     /**
@@ -208,10 +255,13 @@ class WebServer
      */
     protected function _serveStaticFile(string $file, swoole_http_response $response)
     {
+        $this->logger->debug("Loading static file for request", ["file" => $file]);
         $mime = mime_content_type($file);
         $content = file_get_contents($file);
 
         $response->header("Content-Type", $mime);
         $response->end($content);
+
+        $this->logger->debug("Static file served", ["file" => $file]);
     }
 }
